@@ -8,14 +8,13 @@ const MangaForm = () => {
   const [author, setAuthor] = useState('');
   const [description, setDescription] = useState('');
   const [releaseYear, setReleaseYear] = useState('');
-  const [status, setStatus] = useState('Non lu'); // Nouvel état pour le statut
+  const [status, setStatus] = useState('Non lu');
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const { id } = useParams(); // Pour récupérer l'ID du manga en édition
+  const { id } = useParams();
 
   useEffect(() => {
     if (id) {
-      // Charger les données du manga pour l'édition
       loadMangaData(id);
     }
   }, [id]);
@@ -25,7 +24,8 @@ const MangaForm = () => {
     const manga = savedManga.find((item) => item.id === parseInt(id));
     if (manga) {
       setTitle(manga.title);
-      setPhoto(manga.photo ? URL.createObjectURL(new Blob([manga.photo])) : '');
+      setPhoto(manga.photo);
+      setPhotoPreview(manga.photo);
       setAuthor(manga.author);
       setDescription(manga.description);
       setReleaseYear(manga.releaseYear);
@@ -36,8 +36,12 @@ const MangaForm = () => {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPhoto(file);
-      setPhotoPreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhoto(reader.result);
+        setPhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -55,9 +59,9 @@ const MangaForm = () => {
     }
 
     const mangaData = {
-      id: id ? parseInt(id) : Date.now(), // Générer un ID si c'est un nouveau manga
+      id: id ? parseInt(id) : Date.now(),
       title,
-      photo: photo ? URL.createObjectURL(photo) : null,
+      photo, // Stocke l'image en base64
       author,
       description,
       releaseYear,
@@ -67,16 +71,13 @@ const MangaForm = () => {
     let allMangas = JSON.parse(localStorage.getItem('mangas')) || [];
 
     if (id) {
-      // Modifier le manga existant
       allMangas = allMangas.map((manga) => (manga.id === mangaData.id ? mangaData : manga));
     } else {
-      // Ajouter un nouveau manga
       allMangas.push(mangaData);
     }
 
     localStorage.setItem('mangas', JSON.stringify(allMangas));
 
-    // Réinitialiser le formulaire et rediriger
     setTitle('');
     setPhoto(null);
     setPhotoPreview('');
