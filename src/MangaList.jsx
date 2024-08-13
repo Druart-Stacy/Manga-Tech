@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const MangaList = () => {
-  const mangaData = JSON.parse(localStorage.getItem('mangas')) || [];
+  const [mangaData, setMangaData] = useState(JSON.parse(localStorage.getItem('mangas')) || []);
 
   if (mangaData.length === 0) {
     return <p>Aucun manga n'a été ajouté.</p>;
@@ -11,7 +11,7 @@ const MangaList = () => {
   const handleDelete = (id) => {
     const updatedMangas = mangaData.filter((manga) => manga.id !== id);
     localStorage.setItem('mangas', JSON.stringify(updatedMangas));
-    window.location.reload(); // Recharger la page pour mettre à jour la liste
+    setMangaData(updatedMangas); // Mettre à jour l'état local
   };
 
   const handleStatusChange = (id, newStatus) => {
@@ -19,7 +19,7 @@ const MangaList = () => {
       manga.id === id ? { ...manga, status: newStatus } : manga
     );
     localStorage.setItem('mangas', JSON.stringify(updatedMangas));
-    window.location.reload(); // Recharger la page pour mettre à jour la liste
+    setMangaData(updatedMangas); // Mettre à jour l'état local
   };
 
   return (
@@ -28,7 +28,7 @@ const MangaList = () => {
       {mangaData.map((manga) => (
         <div key={manga.id}>
           <h2>{manga.title}</h2>
-          <img src={manga.photo} alt="Photo du Manga" style={{ width: '100px', height: 'auto' }} />
+          <img src={manga.photo} className='MangaPhoto' alt="Photo du Manga" />
           <p>Auteur: {manga.author}</p>
           <p>Description: {manga.description}</p>
           <p>Année de Sortie: {manga.releaseYear}</p>
@@ -40,6 +40,7 @@ const MangaList = () => {
           <Link to={`/edit/${manga.id}`}>Modifier</Link>
         </div>
       ))}
+      <Link to="/add" className="add-manga-button">Ajouter un autre manga</Link>
     </div>
   );
 };
